@@ -101,17 +101,49 @@ class Plugin_Name_Public {
 	}
 
 	/**
-	 * Shortcode processing function.
-	 * Shortcode can take arguments like [plugin-name-shortcode argm='123']
+	 * Shortcode handler function.
+	 *
+	 * Params:
+	 * - $atts — An associative array of attributes. If you do not define any attributes, it will default to an empty string.
+	 * - $content — The enclosed content, if you are defining an enclosing shortcode (e.g. [shortcode]content[/shortcode]).
+	 * - $tag — The shortcode's tag value (e.g. shortcode_name). If two or more shortcodes share the same callback function (which is valid), the $tag value will help determine which shortcode triggered the handler function.
+	 * 
+	 * @param array $atts 		Shortcode attributes. Default empty.
+	 * @param string $content	Shortcode content. Default null.
+	 * @param string $tag		Shortcode tag (name). Default empty.
+	 * @return string
+	 * 
+	 * @since 1.0.0
+	 * @see https://developer.wordpress.org/plugins/shortcodes/
 	 */
-	public function plugin_name_shortcode_func($atts) {
-	  $a = shortcode_atts( array(
-			'argm' => '0',
-			), $atts
-		);
-	  return (
-	      $a['argm']
-	  );
+	public function plugin_name_shortcode_func($atts=[], $content=null, $tag='') {
+		// normalize attribute keys, lowercase
+		$atts = array_change_key_case( (array) $atts, CASE_LOWER );
+		$a = shortcode_atts( array(
+				'title' => 'Example.com',
+				), $atts, $tag
+			);
+
+		// start box
+		$o = '<div class="plugin-name-box">';
+ 
+		// title
+		$o .= '<h2>' . esc_html__( $a['title'], 'plugin-name' ) . '</h2>';
+
+		// enclosing tags
+		if ( !is_null( $content ) ) {
+			// secure output by executing the_content filter hook on $content
+			$o .= apply_filters( 'the_content', $content );
+		
+			// run shortcode parser recursively
+			$o .= do_shortcode( $content );
+		}
+
+		// end box
+		$o .= '</div>';
+	
+		// return output
+		return $o;
 	}
 
 }
